@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Lathe ELS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .value_with_unit {
+            margin: 1ex;
+            padding: 1ex;
+            border-radius: 1ex;
+            background-color: rgba(255, 255, 255, 0.25);
+            color: rgb(162, 230, 162);
+            height: fit-content;
+            white-space: nowrap;
+            width: 100%;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .value_with_unit#span {
+            display: inline-block;
+        }
+
+        .value_with_unit:hover {
+            background-color: rgba(255, 255, 255, 0.564);
+            color: white;
+        }
+
+        .value {
+            font-size: 300%;
+        }
+
+        .unit {
+            font-size: 100%;
+            padding-left: 0.5em;
+            color: rgb(232, 220, 144);
+        }
+
+        button {
+            border-radius: 1ex;
+            padding: 1.5ex;
+            margin: 0.5ex;
+            border-style: none;
+            color: black;
+            font-weight: bolder;
+            font-size: 100%;
+            width: 100%;
+            background-color: rgb(138, 145, 202);
+        }
+
+        button:hover {
+            background-color: rgb(159, 167, 232);
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            position: relative;
+            margin: auto;
+            padding: 0;
+            border-style: none;
+            width: 50%;
+            overflow: visible;
+        }
+    </style>
+</head>
+
+<body style="background-color: black;color:white; font-family: monospace;">
+    <div id="UI" style="display: flex;flex-wrap: wrap;">
+        <div class="value_with_unit"><span class="value" id="pitch">---</span><span class="unit">mm</span></div>
+        <div class="value_with_unit"><span class="value" id="rpm">---</span><span class="unit">rpm</span></div>
+        <div class="value_with_unit"><span class="value" id="angle">---</span><span class="unit">degree</span></div>
+        <button id="connectBleButton" style="width: 100%;height: 100%"><i class="fa fa-bluetooth"
+                style="font-size:300%;"></i></button>
+    </div>
+    <div id="pitchModel" class="modal">
+        <div class="modal-content" id="pitchs">
+            <button onclick="sendCommandAndCloseModal('p 0');">Disable</button>
+            <button onclick="sendCommandAndCloseModal('p 0.25');">0.25 mm (M1)</button>
+            <button onclick="sendCommandAndCloseModal('p 0.4');">0.4 mm (M2)</button>
+            <button onclick="sendCommandAndCloseModal('p 0.5');">0.5 mm (M3)</button>
+            <button onclick="sendCommandAndCloseModal('p 0.7');">0.7 mm (M4)</button>
+            <button onclick="sendCommandAndCloseModal('p 0.8');">0.8 mm (M5)</button>
+            <button onclick="sendCommandAndCloseModal('p 1');">1.0 mm (M6)</button>
+            <button onclick="sendCommandAndCloseModal('p 1.25');">1.25 mm (M8)</button>
+            <button onclick="sendCommandAndCloseModal('p 1.5');">1.5 mm (M10)</button>
+            <button onclick="sendCommandAndCloseModal('p 1.75');">1.75 mm (M12)</button>
+            <button onclick="sendCommandAndCloseModal('p 0.01');">0.01 mm</button>
+            <button onclick="sendCommandAndCloseModal('p 0.02');">0.025 mm</button>
+            <button onclick="sendCommandAndCloseModal('p 0.05');">0.05 mm</button>
+            <button onclick="sendCommandAndCloseModal('p 0.1');">0.1 mm</button>
+            <button onclick="sendCommandAndCloseModal('p 0.2');">0.2 mm</button>
+            <button onclick="sendCommandAndCloseModal('p 0.3');">0.3 mm</button>
+            <button onclick="sendCommandAndCloseModal('p 0.35');">0.35 mm</button>
+            <button onclick="sendCommandAndCloseModal('p 0.45');">0.45 mm</button>
+            <button onclick="sendCommandAndCloseModal('p 0.6');">0.6 mm</button>
+
+        </div>
+    </div>
+
+</body>
+
+<script>
+    // DOM Elements
+    const connectButton = document.getElementById('connectBleButton');
+
+    // Global Variables to Handle Bluetooth
+    var bleDevice = null;
+    var bleServer = null;
+    var bleService = null;
+    var bleCharacteristic = null;
+    var refreshEnable = true;
+
+    // Globals.
+    var lastState = null;
+
+    // Pitch modal.
+    var modal = document.getElementById("pitchModel");
+
+    // Get the button that opens the modal
+    var pitch = document.getElementById("pitch").parentElement;
+
+    // When the user clicks the button, open the modal 
+    pitch.onclick = function () {
+        modal.style.display = "block";
+        refreshEnable = false;
+    }
+
+    // Zero on clicking angle.
+    document.getElementById('angle').parentElement.addEventListener('click', (event) => { sendCommand("zero"); });
+
+    // Connect Button (search for BLE Devices only if BLE is available)
+    connectButton.addEventListener('click', (event) => { connectToDevice(); });
+
+    // Send command.
+    function sendCommand(command) {
+        if (bleServer && bleServer.connected && bleCharacteristic) {
+            var encoder = new TextEncoder();
+            bleCharacteristic.writeValueWithoutResponse(encoder.encode(command));
+        }
+    }
+
+    // Send command and close modal.
+    function sendCommandAndCloseModal(command) {
+        sendCommand(command);
+        modal.style.display = "none";
+        refreshEnable = true;
+    }
+
+    // Connect to BLE Device and Enable Notifications
+    async function connectToDevice() {
+        const serviceUUID = 'f56e953c-8d55-48c8-abb2-9ff1f47a1cc8';
+        bleDevice = await navigator.bluetooth.requestDevice({
+            filters: [{ name: 'Lathe' }],
+            optionalServices: [serviceUUID]
+        });
+
+        bleDevice.addEventListener('gattservicedisconnected', onDisconnected);
+        bleServer = await bleDevice.gatt.connect();
+        bleService = await bleServer.getPrimaryService(serviceUUID);
+        bleCharacteristic = await bleService.getCharacteristic('b2e62abd-e86b-4e7c-914d-5f97463a8867');
+        bleCharacteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
+        bleCharacteristic.startNotifications();
+
+        sendCommand("e | s | p | !");
+
+        connectButton.hidden = true;
+
+        setInterval(() => {
+            if (bleServer && bleServer.connected && refreshEnable) {
+                sendCommand("e | !");
+            }
+        }, 250);
+    }
+
+    function onDisconnected(event) {
+        connectToDevice();
+    }
+
+    function handleCharacteristicChange(event) {
+        const newValueReceived = new TextDecoder().decode(event.target.value);
+        const newState = JSON.parse(newValueReceived);
+
+        if (newState.hasOwnProperty('pitch')) {
+            document.getElementById('pitch').innerText = newState["pitch"] > 0 ? newState["pitch"].toFixed(3) : "---";
+        }
+
+        if (lastState && lastState.hasOwnProperty("angle") && newState.hasOwnProperty("angle")) {
+            const deltaTurns = Math.abs(lastState["angle"] - newState["angle"]) / 360;
+            const deltaTime = newState["!"] - lastState["!"];
+            const rpm = deltaTime > 0 ? (deltaTurns * 60 * 1000) / deltaTime : 0;
+            const numRpm = 30;
+            document.getElementById('rpm').innerText = rpm >= numRpm ? rpm.toFixed() : "---";
+            document.getElementById('angle').innerText = rpm < numRpm ? (lastState["angle"] % 360).toFixed(1) : "---";
+        }
+        lastState = newState;
+    }
+
+</script>
+
+</html>
