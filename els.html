@@ -39,7 +39,7 @@
         }
 
         .pitch-types div {
-            background-color: rgba(255, 255, 0, 0.8);
+            background-color: rgba(255, 255, 0, 1);
             color: black;
             font-size: larger;
             align-content: center;
@@ -107,7 +107,6 @@
         <div class="modal-content" id="pitchs">
             <div class="pitch-types">
                 <div>Feeds</div>
-                <button onclick="sendCommandAndCloseModal('p 0');">Disable</button>
                 <button onclick="sendCommandAndCloseModal('p 0.01');">0.01 mm</button>
                 <button onclick="sendCommandAndCloseModal('p 0.02');">0.025 mm</button>
                 <button onclick="sendCommandAndCloseModal('p 0.05');">0.05 mm</button>
@@ -135,6 +134,8 @@
                 <div>Specials</div>
                 <button onclick="sendCommandAndCloseModal('p 1.32207');">5C internal, 1.041' x 20</button>
                 <button onclick="sendCommandAndCloseModal('p 1.57226');">5C external, 1.238' x 20 </button>
+                <button onclick="sendCommandAndCloseModal('p 0');">Disable</button>
+                <button onclick="closeModal();">Cancel</button>
             </div>
         </div>
     </div>
@@ -182,10 +183,15 @@
     }
 
     // Send command and close modal.
-    function sendCommandAndCloseModal(command) {
-        sendCommand(command);
+    function closeModal() {
         modal.style.display = "none";
         refreshEnable = true;
+    }
+
+    // Send command and close modal.
+    function sendCommandAndCloseModal(command) {
+        sendCommand(command);
+        closeModal();
     }
 
     // Connect to BLE Device and Enable Notifications
