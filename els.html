@@ -38,6 +38,15 @@
             color: rgb(232, 220, 144);
         }
 
+        .pitch-types div {
+            background-color: rgba(255, 255, 0, 0.8);
+            color: black;
+            font-size: larger;
+            align-content: center;
+            border-radius: 0.75em;
+            padding: 0.25em;
+        }
+
         button {
             border-radius: 1ex;
             padding: 1.5ex;
@@ -96,26 +105,37 @@
     </div>
     <div id="pitchModel" class="modal">
         <div class="modal-content" id="pitchs">
-            <button onclick="sendCommandAndCloseModal('p 0');">Disable</button>
-            <button onclick="sendCommandAndCloseModal('p 0.25');">0.25 mm (M1)</button>
-            <button onclick="sendCommandAndCloseModal('p 0.4');">0.4 mm (M2)</button>
-            <button onclick="sendCommandAndCloseModal('p 0.5');">0.5 mm (M3)</button>
-            <button onclick="sendCommandAndCloseModal('p 0.7');">0.7 mm (M4)</button>
-            <button onclick="sendCommandAndCloseModal('p 0.8');">0.8 mm (M5)</button>
-            <button onclick="sendCommandAndCloseModal('p 1');">1.0 mm (M6)</button>
-            <button onclick="sendCommandAndCloseModal('p 1.25');">1.25 mm (M8)</button>
-            <button onclick="sendCommandAndCloseModal('p 1.5');">1.5 mm (M10)</button>
-            <button onclick="sendCommandAndCloseModal('p 1.75');">1.75 mm (M12)</button>
-            <button onclick="sendCommandAndCloseModal('p 0.01');">0.01 mm</button>
-            <button onclick="sendCommandAndCloseModal('p 0.02');">0.025 mm</button>
-            <button onclick="sendCommandAndCloseModal('p 0.05');">0.05 mm</button>
-            <button onclick="sendCommandAndCloseModal('p 0.1');">0.1 mm</button>
-            <button onclick="sendCommandAndCloseModal('p 0.2');">0.2 mm</button>
-            <button onclick="sendCommandAndCloseModal('p 0.3');">0.3 mm</button>
-            <button onclick="sendCommandAndCloseModal('p 0.35');">0.35 mm</button>
-            <button onclick="sendCommandAndCloseModal('p 0.45');">0.45 mm</button>
-            <button onclick="sendCommandAndCloseModal('p 0.6');">0.6 mm</button>
+            <div class="pitch-types">
+                <div>Feeds</div>
+                <button onclick="sendCommandAndCloseModal('p 0');">Disable</button>
+                <button onclick="sendCommandAndCloseModal('p 0.01');">0.01 mm</button>
+                <button onclick="sendCommandAndCloseModal('p 0.02');">0.025 mm</button>
+                <button onclick="sendCommandAndCloseModal('p 0.05');">0.05 mm</button>
+                <button onclick="sendCommandAndCloseModal('p 0.1');">0.1 mm</button>
+                <button onclick="sendCommandAndCloseModal('p 0.2');">0.2 mm</button>
+                <button onclick="sendCommandAndCloseModal('p 0.3');">0.3 mm</button>
+                <button onclick="sendCommandAndCloseModal('p 0.35');">0.35 mm</button>
+                <button onclick="sendCommandAndCloseModal('p 0.45');">0.45 mm</button>
+                <button onclick="sendCommandAndCloseModal('p 0.6');">0.6 mm</button>
+            </div>
 
+            <div class="pitch-types">
+                <div>Metric threads</div>
+                <button onclick="sendCommandAndCloseModal('p 0.25');">0.25 mm (M1)</button>
+                <button onclick="sendCommandAndCloseModal('p 0.4');">0.4 mm (M2)</button>
+                <button onclick="sendCommandAndCloseModal('p 0.5');">0.5 mm (M3)</button>
+                <button onclick="sendCommandAndCloseModal('p 0.7');">0.7 mm (M4)</button>
+                <button onclick="sendCommandAndCloseModal('p 0.8');">0.8 mm (M5)</button>
+                <button onclick="sendCommandAndCloseModal('p 1');">1.0 mm (M6)</button>
+                <button onclick="sendCommandAndCloseModal('p 1.25');">1.25 mm (M8)</button>
+                <button onclick="sendCommandAndCloseModal('p 1.5');">1.5 mm (M10)</button>
+                <button onclick="sendCommandAndCloseModal('p 1.75');">1.75 mm (M12)</button>
+            </div>
+            <div class="pitch-types">
+                <div>Specials</div>
+                <button onclick="sendCommandAndCloseModal('p 1.32207');">5C internal, 1.041' x 20</button>
+                <button onclick="sendCommandAndCloseModal('p 1.57226');">5C external, 1.238' x 20 </button>
+            </div>
         </div>
     </div>
 
