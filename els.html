@@ -85,7 +85,6 @@
         }
 
         .modal-content button {
-            color: yellow;
             width: fit-content;
             padding: 0.5ex;
             margin: 0.25ex;
@@ -102,8 +101,10 @@
         <div class="value_with_unit"><span class="value" id="angle">---</span><span class="unit">degree</span></div>
         <button id="connectBleButton" style="width: 100%;height: 100%"><i class="fa fa-bluetooth"
                 style="font-size:300%;"></i></button>
+        <button id="alert" style="width: 100%;height: 100%;" hidden="true"><i class="fa fa-exclamation-circle"
+                style="font-size:300%;color: yellow;"></i></button>
     </div>
-    <div id="pitchModel" class="modal">
+    <div id="pitchModal" class="modal">
         <div class="modal-content" id="pitchs">
             <div class="pitch-types">
                 <div>Feeds</div>
@@ -144,7 +145,12 @@
 
 <script>
     // DOM Elements
-    const connectButton = document.getElementById('connectBleButton');
+    const connectButtonElement = document.getElementById('connectBleButton');
+    const pitchModalElement = document.getElementById("pitchModal");
+    const pitchElement = document.getElementById("pitch");
+    const angleElement = document.getElementById('angle');
+    const rpmElement = document.getElementById('rpm');
+    const alertElement = document.getElementById("alert");
 
     // Global Variables to Handle Bluetooth
     var bleDevice = null;
@@ -156,23 +162,17 @@
     // Globals.
     var lastState = null;
 
-    // Pitch modal.
-    var modal = document.getElementById("pitchModel");
-
-    // Get the button that opens the modal
-    var pitch = document.getElementById("pitch").parentElement;
-
     // When the user clicks the button, open the modal 
-    pitch.onclick = function () {
-        modal.style.display = "block";
+    pitchElement.parentElement.addEventListener('click', (event) => {
+        pitchModalElement.style.display = "block";
         refreshEnable = false;
-    }
+    });
 
     // Zero on clicking angle.
-    document.getElementById('angle').parentElement.addEventListener('click', (event) => { sendCommand("zero"); });
+    angleElement.parentElement.addEventListener('click', (event) => { sendCommand("zero"); });
 
     // Connect Button (search for BLE Devices only if BLE is available)
-    connectButton.addEventListener('click', (event) => { connectToDevice(); });
+    connectButtonElement.addEventListener('click', (event) => { connectToDevice(); });
 
     // Send command.
     function sendCommand(command) {
@@ -184,7 +184,7 @@
 
     // Send command and close modal.
     function closeModal() {
-        modal.style.display = "none";
+        pitchModalElement.style.display = "none";
         refreshEnable = true;
     }
 
@@ -211,7 +211,7 @@
 
         sendCommand("e | s | p | !");
 
-        connectButton.hidden = true;
+        connectButtonElement.hidden = true;
 
         setInterval(() => {
             if (bleServer && bleServer.connected && refreshEnable) {
@@ -229,7 +229,11 @@
         const newState = JSON.parse(newValueReceived);
 
         if (newState.hasOwnProperty('pitch')) {
-            document.getElementById('pitch').innerText = newState["pitch"] > 0 ? newState["pitch"].toFixed(3) : "---";
+            pitchElement.innerText = newState["pitch"] > 0 ? newState["pitch"].toFixed(2) : "---";
+        }
+
+        if (newState.hasOwnProperty('ready')) {
+            alertElement.hidden = newState['ready'] == true ? true : false;
         }
 
         if (lastState && lastState.hasOwnProperty("angle") && newState.hasOwnProperty("angle")) {
@@ -237,8 +241,16 @@
             const deltaTime = newState["!"] - lastState["!"];
             const rpm = deltaTime > 0 ? (deltaTurns * 60 * 1000) / deltaTime : 0;
             const numRpm = 30;
-            document.getElementById('rpm').innerText = rpm >= numRpm ? rpm.toFixed() : "---";
-            document.getElementById('angle').innerText = rpm < numRpm ? (lastState["angle"] % 360).toFixed(1) : "---";
+            if (rpm < numRpm) {
+                rpmElement.parentElement.hidden = true;
+                angleElement.parentElement.hidden = false;
+                angleElement.innerText = (lastState["angle"] % 360).toFixed(1);
+            }
+            else {
+                rpmElement.parentElement.hidden = false;
+                angleElement.parentElement.hidden = true;
+                rpmElement.innerText = rpm.toFixed();
+            }
         }
         lastState = newState;
     }
