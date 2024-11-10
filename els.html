@@ -158,6 +158,7 @@
     var bleService = null;
     var bleCharacteristic = null;
     var refreshEnable = true;
+    var firstRefresh = true;
 
     // Globals.
     var lastState = null;
@@ -209,13 +210,16 @@
         bleCharacteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
         bleCharacteristic.startNotifications();
 
-        sendCommand("e | s | p | !");
-
         connectButtonElement.hidden = true;
 
         setInterval(() => {
             if (bleServer && bleServer.connected && refreshEnable) {
-                sendCommand("e | !");
+                if (firstRefresh) {
+                    firstRefresh = false;
+                    sendCommand("e | s | p | !");
+                } else {
+                    sendCommand("e | !");
+                }
             }
         }, 250);
     }
