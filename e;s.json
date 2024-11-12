@@ -1,0 +1,12 @@
+{
+    "name": "ELS",
+    "start_url": "els.html",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "icons/els.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}
