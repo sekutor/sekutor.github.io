@@ -274,8 +274,13 @@
         const newValueReceived = new TextDecoder().decode(event.target.value);
         const newState = JSON.parse(newValueReceived);
 
+        var direction = 1;
+        if (newState.hasOwnProperty('direction')) {
+            direction = newState["direction"];
+        }
+
         if (newState.hasOwnProperty('pitch')) {
-            pitchElement.innerText = newState["pitch"] > 0 ? newState["pitch"].toFixed(2) : "---";
+            pitchElement.innerText = newState["pitch"] > 0 ? (newState["pitch"] * direction).toFixed(2) : "---";
         }
 
         if (newState.hasOwnProperty('ready')) {
